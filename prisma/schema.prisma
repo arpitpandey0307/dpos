@@ -1,0 +1,209 @@
+// DPOS — Daily Performance Operating System
+// Prisma Schema v1
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// DOMAIN: User & Auth
+// ─────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  timezone  String   @default("UTC")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  timeBlocks    TimeBlock[]
+  focusSessions FocusSession[]
+  gymSessions   GymSession[]
+  dailyScores   DailyScore[]
+  dailyNotes    DailyNote[]
+  stickyNotes   StickyNote[]
+
+  @@index([email])
+  @@map("users")
+}
+
+// ─────────────────────────────────────────
+// DOMAIN: Time Blocking
+// ─────────────────────────────────────────
+
+enum TimeBlockType {
+  CLASS
+  STUDY
+  GYM
+  MEETING
+  FREE
+}
+
+enum TimeBlockStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  MISSED
+}
+
+model TimeBlock {
+  id              String          @id @default(cuid())
+  userId          String
+  title           String
+  type            TimeBlockType
+  status          TimeBlockStatus @default(PENDING)
+  startTime       DateTime
+  endTime         DateTime
+  plannedDuration Int             // minutes
+  date            DateTime        // date-only (normalized to midnight UTC)
+  isRecurring     Boolean         @default(false)
+  recurringDays   Int[]           // 0=Sun,1=Mon,...6=Sat
+  parentBlockId   String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  focusSession  FocusSession?
+  gymSession    GymSession?
+  notes         DailyNote[]
+  stickyNotes   StickyNote[]
+
+  @@index([userId, date])
+  @@index([userId, status])
+  @@map("time_blocks")
+}
+
+// ─────────────────────────────────────────
+// DOMAIN: Focus Sessions
+// ─────────────────────────────────────────
+
+model FocusSession {
+  id               String   @id @default(cuid())
+  userId           String
+  timeBlockId      String   @unique
+  actualDuration   Int      // minutes
+  rating           Int      // 1–5
+  distractionCount Int      @default(0)
+  startedAt        DateTime
+  completedAt      DateTime
+  createdAt        DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeBlock TimeBlock @relation(fields: [timeBlockId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startedAt])
+  @@map("focus_sessions")
+}
+
+// ─────────────────────────────────────────
+// DOMAIN: Gym Performance
+// ─────────────────────────────────────────
+
+enum WorkoutType {
+  PUSH
+  PULL
+  LEGS
+  CARDIO
+  CUSTOM
+}
+
+model GymSession {
+  id                 String      @id @default(cuid())
+  userId             String
+  timeBlockId        String      @unique
+  workoutType        WorkoutType
+  perceivedIntensity Int         // 1–5
+  notes              String?
+  completedAt        DateTime
+  createdAt          DateTime    @default(now())
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeBlock       TimeBlock       @relation(fields: [timeBlockId], references: [id], onDelete: Cascade)
+  exerciseEntries ExerciseEntry[]
+
+  @@index([userId, completedAt])
+  @@index([userId, workoutType])
+  @@map("gym_sessions")
+}
+
+model ExerciseEntry {
+  id           String   @id @default(cuid())
+  gymSessionId String
+  exerciseName String
+  sets         Int
+  reps         Int
+  weight       Float    // kg
+  createdAt    DateTime @default(now())
+
+  gymSession GymSession @relation(fields: [gymSessionId], references: [id], onDelete: Cascade)
+
+  @@index([gymSessionId])
+  @@index([exerciseName])
+  @@map("exercise_entries")
+}
+
+// ─────────────────────────────────────────
+// DOMAIN: Daily Performance Score
+// ─────────────────────────────────────────
+
+model DailyScore {
+  id                  String   @id @default(cuid())
+  userId              String
+  date                DateTime
+  totalScore          Float
+  executionAccuracy   Float
+  blockCompletionRate Float
+  deepWorkHours       Float
+  consistencyStreak   Int
+  calculatedAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("daily_scores")
+}
+
+// ─────────────────────────────────────────
+// DOMAIN: Notes
+// ─────────────────────────────────────────
+
+model DailyNote {
+  id          String    @id @default(cuid())
+  userId      String
+  date        DateTime
+  content     String
+  timeBlockId String?
+  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeBlock TimeBlock? @relation(fields: [timeBlockId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("daily_notes")
+}
+
+model StickyNote {
+  id          String   @id @default(cuid())
+  userId      String
+  content     String
+  timeBlockId String?
+  pinned      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeBlock TimeBlock? @relation(fields: [timeBlockId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("sticky_notes")
+}
