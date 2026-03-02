@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─────────────────────────────────────────
@@ -161,7 +162,7 @@ model DailyNote {
   id          String    @id @default(cuid())
   userId      String
   date        DateTime
-  content     String
+  content     String   @db.Text
   timeBlockId String?
   updatedAt   DateTime  @updatedAt
   createdAt   DateTime  @default(now())
@@ -177,7 +178,7 @@ model DailyNote {
 model StickyNote {
   id          String   @id @default(cuid())
   userId      String
-  content     String
+  content     String   @db.Text
   timeBlockId String?
   pinned      Boolean  @default(false)
   createdAt   DateTime @default(now())

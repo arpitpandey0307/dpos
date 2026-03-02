@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthFromRequest } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
-  const auth = getAuthUser(req.headers.get("authorization"));
+  const auth = getAuthFromRequest(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const user = await prisma.user.findUnique({

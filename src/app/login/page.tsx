@@ -26,9 +26,7 @@ export default function LoginPage() {
       const { user, token } = await authApi.login({ email, password });
       setAuth(user, token);
 
-      // Set token cookie for middleware
-      document.cookie = `dpos-token=${token}; max-age=${7 * 24 * 3600}; path=/; SameSite=Lax`;
-
+      // Cookie is now set by the server as HTTP-only
       // Full page navigation to ensure cookie is sent with request
       window.location.href = "/dashboard";
     } catch (err) {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -22,14 +22,15 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { user, clearAuth } = useAuthStore();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      // Clear HTTP-only cookie via API
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch { /* ignore */ }
     clearAuth();
-    // Clear cookie
-    document.cookie = "dpos-token=; max-age=0; path=/";
-    router.push("/login");
+    window.location.href = "/login";
   };
 
   return (

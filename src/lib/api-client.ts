@@ -46,6 +46,9 @@ export const authApi = {
   login: (body: { email: string; password: string }) =>
     request<{ user: import("@/types").User; token: string }>("POST", "/auth/login", body),
 
+  logout: () =>
+    request<null>("POST", "/auth/logout"),
+
   me: () => request<{ user: import("@/types").User }>("GET", "/auth/me"),
 };
 

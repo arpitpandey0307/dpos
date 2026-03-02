@@ -9,6 +9,7 @@ import { FocusTimer } from "@/components/FocusTimer";
 import { GymSessionForm } from "@/components/GymSessionForm";
 import { NoteEditor } from "@/components/NoteEditor";
 import { AddBlockModal } from "@/components/AddBlockModal";
+import { PerformanceGraph } from "@/components/PerformanceGraph";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { formatDisplayDate, toDateString } from "@/lib/utils";
@@ -138,6 +139,9 @@ export default function DashboardPage() {
                 ))}
               </div>
             </Card>
+
+            {/* Performance Graph */}
+            <PerformanceGraph />
 
             {/* Daily Note */}
             <NoteEditor

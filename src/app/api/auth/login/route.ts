@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { verifyPassword, signToken } from "@/lib/auth";
+import { verifyPassword, signToken, buildAuthCookie } from "@/lib/auth";
 import type { LoginInput } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const token = signToken({ userId: user.id, email: user.email });
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       data: {
         user: {
           id: user.id,
@@ -36,6 +36,10 @@ export async function POST(req: NextRequest) {
         token,
       },
     });
+
+    // Set HTTP-only cookie
+    res.headers.set("Set-Cookie", buildAuthCookie(token));
+    return res;
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

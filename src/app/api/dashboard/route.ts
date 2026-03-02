@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthFromRequest } from "@/lib/auth";
 import { getBlocksForDay, calcPlannedHours } from "@/services/timeblock.service";
 import { getActiveSession } from "@/services/focus.service";
-import { getDailyScores } from "@/services/scoring.service";
+import { computeAndSaveDailyScore, getDailyScores } from "@/services/scoring.service";
 import prisma from "@/lib/prisma";
 import type { DashboardData } from "@/types";
 
 export async function GET(req: NextRequest) {
-  const auth = getAuthUser(req.headers.get("authorization"));
+  const auth = getAuthFromRequest(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
   const date = dateParam ? new Date(dateParam) : new Date();
 
   try {
+    // Always recompute today's score so it stays fresh (fixes stale score bug)
+    await computeAndSaveDailyScore(auth.userId, date);
+
     const [blocks, activeSession, scores] = await Promise.all([
       getBlocksForDay(auth.userId, date),
       getActiveSession(auth.userId),

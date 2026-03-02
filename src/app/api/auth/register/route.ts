@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { hashPassword } from "@/lib/auth";
-import { signToken } from "@/lib/auth";
+import { hashPassword, signToken, buildAuthCookie } from "@/lib/auth";
 import type { RegisterInput } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -36,12 +35,15 @@ export async function POST(req: NextRequest) {
 
     const token = signToken({ userId: user.id, email: user.email });
 
-    return NextResponse.json(
+    const res = NextResponse.json(
       { data: { user: { ...user, createdAt: user.createdAt.toISOString() }, token } },
       { status: 201 }
     );
+
+    // Set HTTP-only cookie
+    res.headers.set("Set-Cookie", buildAuthCookie(token));
+    return res;
   } catch (err) {
-    console.error("[register] Error:", err);
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }

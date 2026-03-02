@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthFromRequest } from "@/lib/auth";
 import { createGymSession, getRecentGymSessions } from "@/services/gym.service";
 import { computeAndSaveDailyScore } from "@/services/scoring.service";
 
 export async function POST(req: NextRequest) {
-  const auth = getAuthUser(req.headers.get("authorization"));
+  const auth = getAuthFromRequest(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const auth = getAuthUser(req.headers.get("authorization"));
+  const auth = getAuthFromRequest(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const sessions = await getRecentGymSessions(auth.userId);

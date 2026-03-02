@@ -40,7 +40,7 @@ export default function RegisterPage() {
     try {
       const { user, token } = await authApi.register(form);
       setAuth(user, token);
-      document.cookie = `dpos-token=${token}; max-age=${7 * 24 * 3600}; path=/; SameSite=Lax`;
+      // Cookie is now set by the server as HTTP-only
       window.location.href = "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
