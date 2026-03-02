@@ -16,14 +16,15 @@ import type {
 // Serializer: Prisma → Domain type
 // ─────────────────────────────────────────
 
-function serialize(block: Record<string, unknown>): TimeBlock {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function serialize(block: any): TimeBlock {
   return {
-    ...(block as TimeBlock),
-    startTime: (block.startTime as Date).toISOString(),
-    endTime: (block.endTime as Date).toISOString(),
-    date: (block.date as Date).toISOString(),
-    createdAt: (block.createdAt as Date).toISOString(),
-    updatedAt: (block.updatedAt as Date).toISOString(),
+    ...block,
+    startTime: block.startTime instanceof Date ? block.startTime.toISOString() : block.startTime,
+    endTime: block.endTime instanceof Date ? block.endTime.toISOString() : block.endTime,
+    date: block.date instanceof Date ? block.date.toISOString() : block.date,
+    createdAt: block.createdAt instanceof Date ? block.createdAt.toISOString() : block.createdAt,
+    updatedAt: block.updatedAt instanceof Date ? block.updatedAt.toISOString() : block.updatedAt,
   };
 }
 
@@ -49,7 +50,8 @@ export async function getBlocksForDay(
     },
   });
 
-  return blocks.map((b) => serialize(b as Record<string, unknown>));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return blocks.map((b: any) => serialize(b));
 }
 
 export async function getBlockById(
@@ -93,7 +95,8 @@ export async function createTimeBlock(
     select: { id: true, startTime: true, endTime: true },
   });
 
-  const serializedExisting = existing.map((b) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const serializedExisting = existing.map((b: any) => ({
     id: b.id,
     startTime: b.startTime.toISOString(),
     endTime: b.endTime.toISOString(),

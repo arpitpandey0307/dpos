@@ -7,33 +7,22 @@
 import prisma from "@/lib/prisma";
 import type { FocusSession, CreateFocusSessionInput } from "@/types";
 
-function serialize(s: Record<string, unknown>): FocusSession {
-  const session = s as FocusSession & {
-    startedAt: Date;
-    completedAt: Date;
-    createdAt: Date;
-    timeBlock?: { plannedDuration: number };
-  };
-  const executionAccuracy = session.timeBlock
-    ? Math.min(session.actualDuration / session.timeBlock.plannedDuration, 1)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function serialize(s: any): FocusSession {
+  const executionAccuracy = s.timeBlock
+    ? Math.min(s.actualDuration / s.timeBlock.plannedDuration, 1)
     : undefined;
 
   return {
-    id: session.id,
-    userId: session.userId,
-    timeBlockId: session.timeBlockId,
-    actualDuration: session.actualDuration,
-    rating: session.rating,
-    distractionCount: session.distractionCount,
-    startedAt: session.startedAt instanceof Date
-      ? session.startedAt.toISOString()
-      : (session.startedAt as string),
-    completedAt: session.completedAt instanceof Date
-      ? session.completedAt.toISOString()
-      : (session.completedAt as string),
-    createdAt: session.createdAt instanceof Date
-      ? session.createdAt.toISOString()
-      : (session.createdAt as string),
+    id: s.id,
+    userId: s.userId,
+    timeBlockId: s.timeBlockId,
+    actualDuration: s.actualDuration,
+    rating: s.rating,
+    distractionCount: s.distractionCount,
+    startedAt: s.startedAt instanceof Date ? s.startedAt.toISOString() : s.startedAt,
+    completedAt: s.completedAt instanceof Date ? s.completedAt.toISOString() : s.completedAt,
+    createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : s.createdAt,
     executionAccuracy,
   };
 }
@@ -60,7 +49,7 @@ export async function getActiveSession(
     include: { timeBlock: { select: { plannedDuration: true } } },
   });
 
-  return session ? serialize(session as Record<string, unknown>) : null;
+  return session ? serialize(session) : null;
 }
 
 export async function getSessionByBlock(
@@ -71,7 +60,7 @@ export async function getSessionByBlock(
     where: { userId, timeBlockId },
     include: { timeBlock: { select: { plannedDuration: true } } },
   });
-  return session ? serialize(session as Record<string, unknown>) : null;
+  return session ? serialize(session) : null;
 }
 
 // ─────────────────────────────────────────
@@ -185,5 +174,5 @@ export async function getDeepWorkHoursForDay(
     select: { actualDuration: true },
   });
 
-  return sessions.reduce((sum, s) => sum + s.actualDuration, 0) / 60;
+  return sessions.reduce((sum: number, s: { actualDuration: number }) => sum + s.actualDuration, 0) / 60;
 }

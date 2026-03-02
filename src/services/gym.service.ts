@@ -173,13 +173,13 @@ export async function compareWithPreviousSession(
   });
 
   const currentVolume = current.exerciseEntries.reduce(
-    (sum, e) => sum + calcVolume(e.sets, e.reps, e.weight),
+    (sum: number, e: { sets: number; reps: number; weight: number }) => sum + calcVolume(e.sets, e.reps, e.weight),
     0
   );
 
   const previousVolume = previous
     ? previous.exerciseEntries.reduce(
-        (sum, e) => sum + calcVolume(e.sets, e.reps, e.weight),
+        (sum: number, e: { sets: number; reps: number; weight: number }) => sum + calcVolume(e.sets, e.reps, e.weight),
         0
       )
     : 0;

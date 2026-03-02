@@ -95,7 +95,7 @@ export interface DailyNote {
   userId: string;
   date: string;
   content: string; // Markdown
-  timeBlockId?: string;
+  timeBlockId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -104,7 +104,7 @@ export interface StickyNote {
   id: string;
   userId: string;
   content: string; // Markdown
-  timeBlockId?: string;
+  timeBlockId?: string | null;
   pinned: boolean;
   createdAt: string;
   updatedAt: string;

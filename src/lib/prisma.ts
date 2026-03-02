@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 // Prevent multiple Prisma instances in development (hot-reload safety)

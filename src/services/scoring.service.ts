@@ -77,8 +77,10 @@ export async function computeAndSaveDailyScore(
     include: { focusSession: true },
   });
 
-  const scored = blocks.filter((b) => b.type !== "FREE");
-  const completed = scored.filter((b) => b.status === "COMPLETED");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const scored = blocks.filter((b: any) => b.type !== "FREE");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const completed = scored.filter((b: any) => b.status === "COMPLETED");
 
   // Block completion rate
   const blockCompletionRate =
