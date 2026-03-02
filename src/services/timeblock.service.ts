@@ -25,6 +25,9 @@ function serialize(block: any): TimeBlock {
     date: block.date instanceof Date ? block.date.toISOString() : block.date,
     createdAt: block.createdAt instanceof Date ? block.createdAt.toISOString() : block.createdAt,
     updatedAt: block.updatedAt instanceof Date ? block.updatedAt.toISOString() : block.updatedAt,
+    recurringDays: typeof block.recurringDays === "string"
+      ? JSON.parse(block.recurringDays)
+      : (block.recurringDays ?? []),
   };
 }
 
@@ -123,7 +126,7 @@ export async function createTimeBlock(
       plannedDuration,
       date,
       isRecurring: input.isRecurring ?? false,
-      recurringDays: input.recurringDays ?? [],
+      recurringDays: JSON.stringify(input.recurringDays ?? []),
     },
   });
 

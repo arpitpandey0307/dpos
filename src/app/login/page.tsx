@@ -29,7 +29,8 @@ export default function LoginPage() {
       // Set token cookie for middleware
       document.cookie = `dpos-token=${token}; max-age=${7 * 24 * 3600}; path=/; SameSite=Lax`;
 
-      router.push("/dashboard");
+      // Full page navigation to ensure cookie is sent with request
+      window.location.href = "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

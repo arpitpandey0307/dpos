@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/auth";
 
 // Routes that require authentication
 const PROTECTED_ROUTES = ["/dashboard", "/blocks", "/gym", "/notes"];
@@ -18,17 +17,10 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // In Edge middleware we only check cookie presence.
+  // Actual JWT verification happens in API route handlers.
   const token = req.cookies.get("dpos-token")?.value;
-  let isAuthenticated = false;
-
-  if (token) {
-    try {
-      verifyToken(token);
-      isAuthenticated = true;
-    } catch {
-      isAuthenticated = false;
-    }
-  }
+  const isAuthenticated = !!token;
 
   const isProtected = PROTECTED_ROUTES.some((r) => pathname.startsWith(r));
   const isAuthRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r));

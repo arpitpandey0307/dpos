@@ -6,7 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 // ─────────────────────────────────────────
@@ -37,33 +38,21 @@ model User {
 // DOMAIN: Time Blocking
 // ─────────────────────────────────────────
 
-enum TimeBlockType {
-  CLASS
-  STUDY
-  GYM
-  MEETING
-  FREE
-}
-
-enum TimeBlockStatus {
-  PENDING
-  ACTIVE
-  COMPLETED
-  MISSED
-}
+// TimeBlockType: CLASS | STUDY | GYM | MEETING | FREE
+// TimeBlockStatus: PENDING | ACTIVE | COMPLETED | MISSED
 
 model TimeBlock {
-  id              String          @id @default(cuid())
+  id              String   @id @default(cuid())
   userId          String
   title           String
-  type            TimeBlockType
-  status          TimeBlockStatus @default(PENDING)
+  type            String   // CLASS | STUDY | GYM | MEETING | FREE
+  status          String   @default("PENDING") // PENDING | ACTIVE | COMPLETED | MISSED
   startTime       DateTime
   endTime         DateTime
   plannedDuration Int             // minutes
   date            DateTime        // date-only (normalized to midnight UTC)
   isRecurring     Boolean         @default(false)
-  recurringDays   Int[]           // 0=Sun,1=Mon,...6=Sat
+  recurringDays   String          @default("[]") // JSON array: 0=Sun…6=Sat
   parentBlockId   String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -105,19 +94,13 @@ model FocusSession {
 // DOMAIN: Gym Performance
 // ─────────────────────────────────────────
 
-enum WorkoutType {
-  PUSH
-  PULL
-  LEGS
-  CARDIO
-  CUSTOM
-}
+// WorkoutType: PUSH | PULL | LEGS | CARDIO | CUSTOM
 
 model GymSession {
-  id                 String      @id @default(cuid())
+  id                 String   @id @default(cuid())
   userId             String
-  timeBlockId        String      @unique
-  workoutType        WorkoutType
+  timeBlockId        String   @unique
+  workoutType        String   // PUSH | PULL | LEGS | CARDIO | CUSTOM
   perceivedIntensity Int         // 1–5
   notes              String?
   completedAt        DateTime

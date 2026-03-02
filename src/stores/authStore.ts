@@ -31,6 +31,12 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "dpos-auth",
       partialize: (state) => ({ token: state.token, user: state.user }),
+      onRehydrateStorage: () => (state) => {
+        // Derive isAuthenticated from restored token
+        if (state && state.token) {
+          state.isAuthenticated = true;
+        }
+      },
     }
   )
 );

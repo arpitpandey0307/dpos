@@ -41,7 +41,7 @@ export default function RegisterPage() {
       const { user, token } = await authApi.register(form);
       setAuth(user, token);
       document.cookie = `dpos-token=${token}; max-age=${7 * 24 * 3600}; path=/; SameSite=Lax`;
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {

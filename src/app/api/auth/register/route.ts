@@ -40,7 +40,9 @@ export async function POST(req: NextRequest) {
       { data: { user: { ...user, createdAt: user.createdAt.toISOString() }, token } },
       { status: 201 }
     );
-  } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err) {
+    console.error("[register] Error:", err);
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
