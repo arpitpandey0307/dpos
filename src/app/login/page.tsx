@@ -80,6 +80,15 @@ export default function LoginPage() {
             <Button type="submit" loading={loading} className="mt-2 w-full">
               Sign in
             </Button>
+
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                className="text-xs text-slate-500 hover:text-violet-400 transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </form>
 
           <p className="text-center text-sm text-slate-600 mt-6">

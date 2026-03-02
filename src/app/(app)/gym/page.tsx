@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { gymApi } from "@/lib/api-client";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -14,19 +14,37 @@ export default function GymPage() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const [s, p] = await Promise.all([gymApi.recent(), gymApi.prs()]);
-        setSessions(s);
-        setPRs(p);
-        if (s.length > 0) setSelected(s[0].id);
-      } finally {
-        setLoading(false);
-      }
-    })();
+  const fetchGymData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [s, p] = await Promise.all([gymApi.recent(), gymApi.prs()]);
+      setSessions(s);
+      setPRs(p);
+      if (s.length > 0 && !selected) setSelected(s[0].id);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchGymData();
+  }, [fetchGymData]);
+
+  // Re-fetch when a gym session is completed (dispatched from GymSessionForm)
+  useEffect(() => {
+    const handler = () => fetchGymData();
+    window.addEventListener("gym-session-completed", handler);
+    return () => window.removeEventListener("gym-session-completed", handler);
+  }, [fetchGymData]);
+
+  // Re-fetch when tab becomes visible (user navigates back)
+  useEffect(() => {
+    const handler = () => {
+      if (document.visibilityState === "visible") fetchGymData();
+    };
+    document.addEventListener("visibilitychange", handler);
+    return () => document.removeEventListener("visibilitychange", handler);
+  }, [fetchGymData]);
 
   const selectedSession = sessions.find((s) => s.id === selected);
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { dashboardApi, blocksApi } from "@/lib/api-client";
+import { dashboardApi, blocksApi, scoreApi } from "@/lib/api-client";
 import { ScoreCard } from "@/components/ScoreCard";
 import { TimelineBlock } from "@/components/TimelineBlock";
 import { FocusTimer } from "@/components/FocusTimer";
@@ -10,10 +10,11 @@ import { GymSessionForm } from "@/components/GymSessionForm";
 import { NoteEditor } from "@/components/NoteEditor";
 import { AddBlockModal } from "@/components/AddBlockModal";
 import { PerformanceGraph } from "@/components/PerformanceGraph";
+import { MiniCalendar } from "@/components/MiniCalendar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { formatDisplayDate, toDateString } from "@/lib/utils";
-import { Plus, ChevronLeft, ChevronRight, Dumbbell, Clock } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Dumbbell, Clock, CalendarDays } from "lucide-react";
 import type { DashboardData, TimeBlock } from "@/types";
 
 export default function DashboardPage() {
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const [focusBlock, setFocusBlock] = useState<TimeBlock | null>(null);
   const [gymBlock, setGymBlock] = useState<TimeBlock | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [calOpen, setCalOpen] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
@@ -48,9 +50,49 @@ export default function DashboardPage() {
     setDate(d);
   };
 
+  // Recalculate score and update card + notify graph
+  const refreshScore = useCallback(async () => {
+    try {
+      const dateStr = toDateString(date);
+      const newScore = await scoreApi.recalculate(dateStr);
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              todayScore: newScore,
+              scoreDelta: prev.yesterdayScore
+                ? newScore.totalScore - prev.yesterdayScore.totalScore
+                : 0,
+            }
+          : prev
+      );
+      window.dispatchEvent(new Event("score-updated"));
+    } catch (err) {
+      console.error("Failed to refresh score:", err);
+    }
+  }, [date]);
+
   const handleDeleteBlock = async (blockId: string) => {
-    await blocksApi.delete(blockId);
-    fetchDashboard();
+    // Optimistic UI: remove block from state immediately
+    if (data) {
+      const removed = data.timeBlocks.find((b) => b.id === blockId);
+      setData({
+        ...data,
+        timeBlocks: data.timeBlocks.filter((b) => b.id !== blockId),
+      });
+      try {
+        await blocksApi.delete(blockId);
+        // Refresh score after deletion
+        refreshScore();
+      } catch {
+        // Rollback on error
+        if (removed) {
+          setData((prev) =>
+            prev ? { ...prev, timeBlocks: [...prev.timeBlocks, removed] } : prev
+          );
+        }
+      }
+    }
   };
 
   return (
@@ -61,16 +103,29 @@ export default function DashboardPage() {
           <h1 className="text-xl font-bold text-slate-100">Dashboard</h1>
           <p className="text-sm text-slate-500 mt-0.5">Did you execute your day properly?</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 relative">
           <button onClick={() => shiftDate(-1)} className="p-2 rounded-lg hover:bg-slate-800 text-slate-400">
             <ChevronLeft size={16} />
           </button>
-          <span className="text-sm font-medium text-slate-300 min-w-[160px] text-center">
-            {formatDisplayDate(date)}
-          </span>
+          <button
+            onClick={() => setCalOpen((v) => !v)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+          >
+            <CalendarDays size={14} className="text-violet-400" />
+            <span className="text-sm font-medium text-slate-300 min-w-[140px] text-center">
+              {formatDisplayDate(date)}
+            </span>
+          </button>
           <button onClick={() => shiftDate(1)} className="p-2 rounded-lg hover:bg-slate-800 text-slate-400">
             <ChevronRight size={16} />
           </button>
+          {calOpen && (
+            <MiniCalendar
+              selected={date}
+              onChange={(d) => setDate(d)}
+              onClose={() => setCalOpen(false)}
+            />
+          )}
         </div>
       </div>
 
@@ -200,7 +255,7 @@ export default function DashboardPage() {
           block={focusBlock}
           open={!!focusBlock}
           onClose={() => setFocusBlock(null)}
-          onComplete={() => { setFocusBlock(null); fetchDashboard(); }}
+          onComplete={() => { setFocusBlock(null); fetchDashboard().then(refreshScore); }}
         />
       )}
       {gymBlock && (
@@ -208,14 +263,14 @@ export default function DashboardPage() {
           block={gymBlock}
           open={!!gymBlock}
           onClose={() => setGymBlock(null)}
-          onComplete={() => { setGymBlock(null); fetchDashboard(); }}
+          onComplete={() => { setGymBlock(null); fetchDashboard().then(refreshScore); }}
         />
       )}
       <AddBlockModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
         date={toDateString(date)}
-        onCreated={fetchDashboard}
+        onCreated={() => { fetchDashboard().then(refreshScore); }}
       />
     </div>
   );

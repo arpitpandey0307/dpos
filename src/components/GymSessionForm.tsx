@@ -67,6 +67,7 @@ export function GymSessionForm({ block, open, onClose, onComplete }: GymSessionF
         })),
       };
       await gymApi.create(input);
+      window.dispatchEvent(new Event("gym-session-completed"));
       onComplete();
       onClose();
     } catch (err) {

@@ -16,13 +16,14 @@ datasource db {
 // ─────────────────────────────────────────
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  timezone  String   @default("UTC")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  name          String
+  timezone      String   @default("UTC")
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   timeBlocks    TimeBlock[]
   focusSessions FocusSession[]
@@ -189,4 +190,21 @@ model StickyNote {
 
   @@index([userId, createdAt])
   @@map("sticky_notes")
+}
+
+// ─────────────────────────────────────────
+// DOMAIN: OTP Verification
+// ─────────────────────────────────────────
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String   // 4-digit OTP
+  type      String   // REGISTER | RESET_PASSWORD
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, type])
+  @@map("otp_codes")
 }

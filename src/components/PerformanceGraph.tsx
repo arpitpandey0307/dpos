@@ -115,6 +115,13 @@ export function PerformanceGraph() {
     fetchHistory();
   }, [fetchHistory]);
 
+  // Re-fetch when score is recalculated
+  useEffect(() => {
+    const handler = () => fetchHistory();
+    window.addEventListener("score-updated", handler);
+    return () => window.removeEventListener("score-updated", handler);
+  }, [fetchHistory]);
+
   const stats = computeStats(data);
 
   return (

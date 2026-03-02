@@ -40,7 +40,7 @@ async function request<T>(
 // Auth
 // ─────────────────────────────────────────
 export const authApi = {
-  register: (body: { email: string; password: string; name: string; timezone?: string }) =>
+  register: (body: { email: string; password: string; name: string; timezone?: string; otpCode: string }) =>
     request<{ user: import("@/types").User; token: string }>("POST", "/auth/register", body),
 
   login: (body: { email: string; password: string }) =>
@@ -50,6 +50,15 @@ export const authApi = {
     request<null>("POST", "/auth/logout"),
 
   me: () => request<{ user: import("@/types").User }>("GET", "/auth/me"),
+
+  sendOtp: (body: { email: string; type: "REGISTER" | "RESET_PASSWORD" }) =>
+    request<{ message: string }>("POST", "/auth/send-otp", body),
+
+  verifyOtp: (body: { email: string; code: string; type: "REGISTER" | "RESET_PASSWORD" }) =>
+    request<{ verified: boolean }>("POST", "/auth/verify-otp", body),
+
+  resetPassword: (body: { email: string; code: string; newPassword: string }) =>
+    request<{ message: string }>("POST", "/auth/reset-password", body),
 };
 
 // ─────────────────────────────────────────
