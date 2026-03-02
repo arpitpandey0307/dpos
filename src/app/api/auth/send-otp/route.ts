@@ -14,6 +14,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid OTP type" }, { status: 400 });
     }
 
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: "Please enter a valid email address" }, { status: 400 });
+    }
+
     // For REGISTER: make sure email isn't already registered & verified
     if (type === "REGISTER") {
       const existing = await prisma.user.findUnique({ where: { email } });

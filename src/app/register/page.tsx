@@ -5,7 +5,8 @@ import Link from "next/link";
 import { authApi } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
-import { Input, Select } from "@/components/ui/Input";
+import { Input, PasswordInput, Select } from "@/components/ui/Input";
+import { AuthBackground } from "@/components/AuthBackground";
 import { Zap, ArrowLeft } from "lucide-react";
 
 const TIMEZONES = [
@@ -131,14 +132,16 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center px-4 relative">
+      <AuthBackground />
+
+      <div className="w-full max-w-sm relative z-10">
         <div className="flex items-center justify-center gap-2 mb-8">
           <Zap size={24} className="text-violet-400" />
           <span className="text-xl font-bold text-slate-100 tracking-tight">DPOS</span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
+        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-8 shadow-2xl shadow-violet-900/10">
           {step === "form" ? (
             <>
               <h1 className="text-lg font-semibold text-slate-100 mb-1">Create account</h1>
@@ -160,9 +163,8 @@ export default function RegisterPage() {
                   onChange={(e) => set("email", e.target.value)}
                   required
                 />
-                <Input
+                <PasswordInput
                   label="Password"
-                  type="password"
                   placeholder="Min 8 characters"
                   value={form.password}
                   onChange={(e) => set("password", e.target.value)}

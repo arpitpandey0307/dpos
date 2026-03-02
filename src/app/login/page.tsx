@@ -6,7 +6,8 @@ import Link from "next/link";
 import { authApi } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Input, PasswordInput } from "@/components/ui/Input";
+import { AuthBackground } from "@/components/AuthBackground";
 import { Zap } from "lucide-react";
 
 export default function LoginPage() {
@@ -25,9 +26,6 @@ export default function LoginPage() {
     try {
       const { user, token } = await authApi.login({ email, password });
       setAuth(user, token);
-
-      // Cookie is now set by the server as HTTP-only
-      // Full page navigation to ensure cookie is sent with request
       window.location.href = "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
@@ -37,15 +35,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-      <div className="w-full max-w-sm">
-        {/* Brand */}
+    <div className="min-h-screen flex items-center justify-center px-4 relative">
+      <AuthBackground />
+
+      <div className="w-full max-w-sm relative z-10">
         <div className="flex items-center justify-center gap-2 mb-8">
           <Zap size={24} className="text-violet-400" />
           <span className="text-xl font-bold text-slate-100 tracking-tight">DPOS</span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
+        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-8 shadow-2xl shadow-violet-900/10">
           <h1 className="text-lg font-semibold text-slate-100 mb-1">Sign in</h1>
           <p className="text-sm text-slate-500 mb-6">Track your execution every day.</p>
 
@@ -60,10 +59,9 @@ export default function LoginPage() {
               required
               autoComplete="email"
             />
-            <Input
+            <PasswordInput
               id="password"
               label="Password"
-              type="password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

@@ -18,6 +18,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  bio?: string | null;
+  profilePicture?: string | null;
   timezone: string;
   createdAt: string;
 }

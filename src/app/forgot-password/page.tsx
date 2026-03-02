@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { authApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Input, PasswordInput } from "@/components/ui/Input";
+import { AuthBackground } from "@/components/AuthBackground";
 import { Zap, ArrowLeft, Check } from "lucide-react";
 
 type Step = "email" | "otp" | "newpass" | "done";
@@ -122,14 +123,16 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center px-4 relative">
+      <AuthBackground />
+
+      <div className="w-full max-w-sm relative z-10">
         <div className="flex items-center justify-center gap-2 mb-8">
           <Zap size={24} className="text-violet-400" />
           <span className="text-xl font-bold text-slate-100 tracking-tight">DPOS</span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
+        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-8 shadow-2xl shadow-violet-900/10">
           {step === "email" && (
             <>
               <h1 className="text-lg font-semibold text-slate-100 mb-1">Reset password</h1>
@@ -210,17 +213,15 @@ export default function ForgotPasswordPage() {
               <h1 className="text-lg font-semibold text-slate-100 mb-1">Set new password</h1>
               <p className="text-sm text-slate-500 mb-6">Choose a strong password.</p>
               <form onSubmit={handleResetPassword} className="flex flex-col gap-4">
-                <Input
+                <PasswordInput
                   label="New Password"
-                  type="password"
                   placeholder="Min 8 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                 />
-                <Input
+                <PasswordInput
                   label="Confirm Password"
-                  type="password"
                   placeholder="Re-enter password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

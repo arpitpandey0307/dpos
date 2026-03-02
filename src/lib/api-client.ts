@@ -159,3 +159,17 @@ export const scoreApi = {
   history: (days?: number) =>
     request<import("@/types").DailyScore[]>("GET", `/scores/history${days ? `?days=${days}` : ""}`),
 };
+
+// ─────────────────────────────────────────
+// Profile
+// ─────────────────────────────────────────
+export const profileApi = {
+  get: () =>
+    request<import("@/types").User>("GET", "/profile"),
+
+  update: (body: { name?: string; bio?: string; profilePicture?: string }) =>
+    request<import("@/types").User>("PATCH", "/profile", body),
+
+  changePassword: (body: { currentPassword: string; newPassword: string }) =>
+    request<{ message: string }>("POST", "/profile/password", body),
+};

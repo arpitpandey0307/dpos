@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
+import { ProfilePanel } from "@/components/ProfilePanel";
 import {
   LayoutDashboard,
   Clock,
@@ -23,60 +25,78 @@ const NAV_ITEMS = [
 export function Sidebar() {
   const pathname = usePathname();
   const { user, clearAuth } = useAuthStore();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
-      // Clear HTTP-only cookie via API
       await fetch("/api/auth/logout", { method: "POST" });
     } catch { /* ignore */ }
     clearAuth();
     window.location.href = "/login";
   };
 
+  const initials = (user?.name || "U").split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 bg-slate-950 border-r border-slate-800 flex flex-col z-40">
-      {/* Brand */}
-      <div className="flex items-center gap-2 px-5 py-5 border-b border-slate-800">
-        <Zap size={18} className="text-violet-400" />
-        <span className="text-base font-bold text-slate-100 tracking-tight">DPOS</span>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
-        {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-          const active = pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                active
-                  ? "bg-violet-600/20 text-violet-300 border border-violet-500/30"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-              )}
-            >
-              <Icon size={16} />
-              {label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* User + logout */}
-      <div className="px-3 pb-4 border-t border-slate-800 pt-3">
-        <div className="px-3 py-2 mb-1">
-          <p className="text-xs font-medium text-slate-300 truncate">{user?.name}</p>
-          <p className="text-[11px] text-slate-600 truncate">{user?.email}</p>
+    <>
+      <aside className="fixed left-0 top-0 h-screen w-56 bg-slate-950 border-r border-slate-800 flex flex-col z-40">
+        {/* Brand */}
+        <div className="flex items-center gap-2 px-5 py-5 border-b border-slate-800">
+          <Zap size={18} className="text-violet-400" />
+          <span className="text-base font-bold text-slate-100 tracking-tight">DPOS</span>
         </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-sm text-slate-500 hover:text-red-400 hover:bg-slate-800 transition-colors"
-        >
-          <LogOut size={15} />
-          Logout
-        </button>
-      </div>
-    </aside>
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
+          {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+            const active = pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  active
+                    ? "bg-violet-600/20 text-violet-300 border border-violet-500/30"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                )}
+              >
+                <Icon size={16} />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* User profile + logout */}
+        <div className="px-3 pb-4 border-t border-slate-800 pt-3">
+          <button
+            onClick={() => setProfileOpen(true)}
+            className="flex items-center gap-3 px-3 py-2.5 mb-1 w-full rounded-lg hover:bg-slate-800 transition-colors group"
+          >
+            <div className="w-8 h-8 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {user?.profilePicture ? (
+                <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xs font-bold text-violet-300">{initials}</span>
+              )}
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-xs font-medium text-slate-300 truncate group-hover:text-slate-100">{user?.name}</p>
+              <p className="text-[10px] text-slate-600 truncate">{user?.email}</p>
+            </div>
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-sm text-slate-500 hover:text-red-400 hover:bg-slate-800 transition-colors"
+          >
+            <LogOut size={15} />
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <ProfilePanel open={profileOpen} onClose={() => setProfileOpen(false)} />
+    </>
   );
 }
