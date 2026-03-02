@@ -1,18 +1,12 @@
 /**
  * DPOS Email Service
- * Sends OTP codes via nodemailer.
- * Uses Gmail SMTP by default — configure via env vars.
+ * Sends OTP codes via Resend (HTTP API — no SMTP ports needed).
+ * Set RESEND_API_KEY env var in Railway.
  */
 
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD, // Gmail App Password
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export function generateOTP(): string {
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -49,10 +43,15 @@ export async function sendOTPEmail(
     </div>
   `;
 
-  await transporter.sendMail({
-    from: `"DPOS" <${process.env.SMTP_EMAIL}>`,
+  const { error } = await resend.emails.send({
+    from: "DPOS <onboarding@resend.dev>",
     to,
     subject,
     html,
   });
+
+  if (error) {
+    console.error("Resend error:", error);
+    throw new Error(error.message || "Failed to send email");
+  }
 }
