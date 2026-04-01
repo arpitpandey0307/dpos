@@ -42,13 +42,18 @@ export async function sendOTPEmail(
   `;
 
   const senderEmail = process.env.SENDER_EMAIL || "noreply@dpos.app";
+  const brevoApiKey = process.env.BREVO_API_KEY;
+
+  if (!brevoApiKey) {
+    throw new Error("BREVO_API_KEY environment variable is not set");
+  }
 
   const res = await fetch(BREVO_URL, {
     method: "POST",
     headers: {
       "accept": "application/json",
       "content-type": "application/json",
-      "api-key": process.env.BREVO_API_KEY!,
+      "api-key": brevoApiKey,
     },
     body: JSON.stringify({
       sender: { name: "DPOS", email: senderEmail },

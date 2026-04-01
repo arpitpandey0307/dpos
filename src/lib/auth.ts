@@ -2,11 +2,14 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import type { AuthPayload } from "@/types";
 
-const JWT_SECRET = process.env.JWT_SECRET!;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? "7d";
 
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is not set");
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is not set");
+  }
+  return secret;
 }
 
 // Cookie config
@@ -33,11 +36,11 @@ export async function verifyPassword(
 // ─────────────────────────────────────────
 
 export function signToken(payload: Pick<AuthPayload, "userId" | "email">): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
 }
 
 export function verifyToken(token: string): AuthPayload {
-  return jwt.verify(token, JWT_SECRET) as AuthPayload;
+  return jwt.verify(token, getJwtSecret()) as AuthPayload;
 }
 
 // ─────────────────────────────────────────

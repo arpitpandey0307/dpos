@@ -155,6 +155,36 @@ NEXT_PUBLIC_APP_URL=     # App URL (e.g. http://localhost:3000)
 
 ## Deployment
 
+### Vercel Deployment
+
+1. **Push your code to GitHub**
+   ```bash
+   git push origin main
+   ```
+
+2. **Import to Vercel**
+   - Go to [vercel.com](https://vercel.com) and sign in
+   - Click "Add New Project"
+   - Import your GitHub repository
+
+3. **Configure Environment Variables**
+   In Vercel project settings, add these environment variables:
+   ```env
+   DATABASE_URL=            # PostgreSQL connection string (pooled)
+   DIRECT_URL=              # PostgreSQL direct connection string
+   JWT_SECRET=              # Secret key for JWT signing (generate with: openssl rand -base64 64)
+   JWT_EXPIRES_IN=7d        # Token expiry duration
+   BREVO_API_KEY=           # Brevo API key (starts with xkeysib-)
+   SENDER_EMAIL=            # Verified sender email for OTP
+   NEXT_PUBLIC_APP_URL=     # Your Vercel domain (e.g. https://your-app.vercel.app)
+   ```
+
+4. **Deploy**
+   - Vercel will automatically build and deploy your app
+   - The build command `prisma generate && next build` runs automatically
+
+### Railway Deployment
+
 Deployed on **Railway** with auto-deploy from the `main` branch.
 
 ```bash
