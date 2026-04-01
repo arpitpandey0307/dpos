@@ -3,6 +3,9 @@ import prisma from "@/lib/prisma";
 import { verifyPassword, signToken, buildAuthCookie } from "@/lib/auth";
 import type { LoginInput } from "@/types";
 
+// Force dynamic rendering - don't try to prerender this route
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const body: LoginInput = await req.json();

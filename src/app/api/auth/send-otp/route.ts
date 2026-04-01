@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { generateOTP, sendOTPEmail } from "@/lib/email";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const { email, type } = await req.json();
@@ -49,7 +52,16 @@ export async function POST(req: NextRequest) {
     });
 
     // Send email
-    await sendOTPEmail(email, code, type as "REGISTER" | "RESET_PASSWORD");
+    try {
+      await sendOTPEmail(email, code, type as "REGISTER" | "RESET_PASSWORD");
+    } catch (emailError) {
+      console.error("Email send error:", emailError);
+      // Delete the OTP since email failed
+      await prisma.otpCode.deleteMany({ where: { email, code, type } });
+      return NextResponse.json({ 
+        error: "Failed to send OTP email. Please check email service configuration." 
+      }, { status: 500 });
+    }
 
     return NextResponse.json({ data: { message: "OTP sent to your email" } });
   } catch (err) {
