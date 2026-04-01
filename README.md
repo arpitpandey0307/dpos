@@ -2,7 +2,7 @@
 
 A full-stack productivity web app to track your daily performance through time blocks, gym sessions, notes, and an auto-calculated daily score.
 
-🔗 **Live:** [dpos-production.up.railway.app](https://dpos-production.up.railway.app)
+🔗 **Live:** [dpos-production.up.railway.app](dpos-red.vercel.app)
 
 ---
 
